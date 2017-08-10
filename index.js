@@ -86,7 +86,8 @@ async function genAST(wantedFileList) {
 			// AssignmentExpression
 			ast = acorn.parse(str, {
 				ecmaVersion: 8,
-        sourceType: 'module'
+        sourceType: 'module',
+        allowImportExportEverywhere: true
 			})
 			walk.simple(ast, {
 			  MemberExpression(node) {
