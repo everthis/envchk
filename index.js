@@ -85,7 +85,8 @@ async function genAST(wantedFileList) {
 			str = await readFileAsync(wantedFileList[i], {encoding: 'utf8'})
 			// AssignmentExpression
 			ast = acorn.parse(str, {
-				ecmaVersion: 8
+				ecmaVersion: 8,
+        sourceType: 'module'
 			})
 			walk.simple(ast, {
 			  MemberExpression(node) {
