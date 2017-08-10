@@ -5,6 +5,7 @@
 const fs = require('fs')
 const path = require('path')
 const acorn = require('acorn')
+require('acorn-es7-plugin')(acorn)
 const {promisify} = require('util')
 const readFileAsync = promisify(fs.readFile)
 const walk = require("acorn/dist/walk")
@@ -24,13 +25,13 @@ const walkSync = (dir, filelist = []) => {
 }
 
 function typeCheck(filePath) {
-	const types = ['js']
-	for (let i = types.length - 1; i >= 0; i--) {
-		if(types.indexOf(path.extname(filePath).slice(1)) !== -1) {
-			return true
-		}
-	}
-	return false
+  const types = ['js']
+  for (let i = types.length - 1; i >= 0; i--) {
+    if(types.indexOf(path.extname(filePath).slice(1)) !== -1) {
+      return true
+    }
+  }
+  return false
 }
 
 function pp (obj) {
@@ -38,20 +39,20 @@ function pp (obj) {
 }
 
 function getEnvIdentifier(node, list = []) {
-	let res = ''
-	if (node.object
-		&& node.object.type === 'Identifier'
-		&& node.object.name === 'ENV') {
+  let res = ''
+  if (node.object
+    && node.object.type === 'Identifier'
+    && node.object.name === 'ENV') {
     if (node.property
-			  && node.property.type === 'Literal') {
-       	res = node.property.value
+        && node.property.type === 'Literal') {
+        res = node.property.value
     } else if (node.property
-			  && node.property.type === 'Identifier') {
-       	res = node.property.name
+        && node.property.type === 'Identifier') {
+        res = node.property.name
     }
-	}
-	res === '' ? null : list.push(res)
-	return list
+  }
+  res === '' ? null : list.push(res)
+  return list
 }
 
 function envIdentifierWithProcess(node, list = []) {
@@ -73,42 +74,43 @@ return list
 }
 
 function filterDirs(arr) {
-	return arr.filter(el => excludedFolders.indexOf(path.parse(el).name) === -1)
+  return arr.filter(el => excludedFolders.indexOf(path.parse(el).name) === -1)
 }
 
 async function genAST(wantedFileList) {
-	const res = []
-	try {
-		let str = ''
-		let ast = {}
-		for (let i = wantedFileList.length - 1; i >= 0; i--) {
+  const res = []
+  try {
+    let str = ''
+    let ast = {}
+    for (let i = wantedFileList.length - 1; i >= 0; i--) {
       console.log(wantedFileList[i])
-			str = await readFileAsync(wantedFileList[i], {encoding: 'utf8'})
-			// AssignmentExpression
-			ast = acorn.parse(str, {
-				ecmaVersion: 8,
+      str = await readFileAsync(wantedFileList[i], {encoding: 'utf8'})
+      // AssignmentExpression
+      ast = acorn.parse(str, {
+        ecmaVersion: 8,
+        plugins:{asyncawait:true},
         sourceType: 'module',
         allowHashBang: true,
         allowImportExportEverywhere: true
-			})
-			walk.simple(ast, {
-			  MemberExpression(node) {
-			  	getEnvIdentifier(node, res)
+      })
+      walk.simple(ast, {
+        MemberExpression(node) {
+          getEnvIdentifier(node, res)
         envIdentifierWithProcess(node, res)
-			  }
-			})
-		}
-	} catch (err) {
-		console.log('ERROR:', err)
-	}
-	return res
+        }
+      })
+    }
+  } catch (err) {
+    console.log('ERROR:', err)
+  }
+  return res
 }
 
 
 function readDirAndFiles(files = []) {
-	let tmpPath
-	const dir = process.cwd()
-	return new Promise((resolve, reject) => {
+  let tmpPath
+  const dir = process.cwd()
+  return new Promise((resolve, reject) => {
     try {
       if (!files.length) {
         const list = fs.readdirSync(dir)
@@ -132,10 +134,14 @@ function readDirAndFiles(files = []) {
   })
 }
 
+function uniqArr(arr) {
+  return arr.filter((v, i, a) => a.indexOf(v) === i)
+}
+
 function checkAll() {
   readDirAndFiles()
   .then(genAST)
-  .then(data => console.log(pp(data)))
+  .then(data => console.log(pp(uniqArr(data))))
 }
 
 module.exports = {
