@@ -208,7 +208,7 @@ function uniqArr(arr) {
 function checkAll() {
   readDirAndFiles()
     .then(genAST)
-    .then(data => console.log(pp(uniqArr(data))))
+    .then(data => uniqArr(data))
 }
 
 module.exports = {
