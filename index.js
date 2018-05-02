@@ -17,6 +17,9 @@ const excludedFolders = [
   'bin'
 ]
 const excludedFilePrefix = ['._']
+const cwd = process.cwd()
+const cwdLen = cwd.length + 1
+
 let pwdFiles = []
 let pwdDirs = []
 
@@ -45,7 +48,7 @@ function pp(obj) {
   return JSON.stringify(obj, null, 2)
 }
 
-function getEnvIdentifier(node, list = []) {
+function getEnvIdentifier(node, list = [], filePath) {
   let res = ''
   if (
     node.object &&
@@ -61,11 +64,11 @@ function getEnvIdentifier(node, list = []) {
       res = node.property.name
     }
   }
-  res === '' ? null : list.push(res)
+  res === '' ? null : list.push({ name: res, paths: [filePath.slice(cwdLen)] })
   return list
 }
 
-function envIdentifierWithProcess(node, list = []) {
+function envIdentifierWithProcess(node, list = [], filePath) {
   let res = ''
   if (
     node.object &&
@@ -81,7 +84,7 @@ function envIdentifierWithProcess(node, list = []) {
   ) {
     res = node.property.name
   }
-  res === '' ? null : list.push(res)
+  res === '' ? null : list.push({ name: res, paths: [filePath.slice(cwdLen)] })
   return list
 }
 
@@ -148,8 +151,8 @@ async function genAST(wantedFileList) {
       traverse(ast, {
         enter: function(path) {
           if (path.node.type == 'MemberExpression') {
-            getEnvIdentifier(path.node, res)
-            envIdentifierWithProcess(path.node, res)
+            getEnvIdentifier(path.node, res, wantedFileList[i])
+            envIdentifierWithProcess(path.node, res, wantedFileList[i])
           }
         }
       })
@@ -189,7 +192,17 @@ function readDirAndFiles(files = []) {
 }
 
 function uniqArr(arr) {
-  return arr.filter((v, i, a) => a.indexOf(v) === i)
+  return arr.filter((v, i, a) => {
+    const idx = a.findIndex(el => el.name === v.name)
+    if (idx === i) {
+      return true
+    } else {
+      if (a[idx].paths.indexOf(v.paths[0]) === -1) {
+        a[idx].paths.push(v.paths[0])
+      }
+      return false
+    }
+  })
 }
 
 function checkAll() {
