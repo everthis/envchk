@@ -163,9 +163,9 @@ async function genAST(wantedFileList) {
   return res
 }
 
-function readDirAndFiles(files = []) {
+function readDirAndFiles(cwdDir, files = []) {
   let tmpPath
-  const dir = process.cwd()
+  const dir = cwdDir || process.cwd()
   return new Promise((resolve, reject) => {
     try {
       if (!files.length) {
@@ -205,8 +205,8 @@ function uniqArr(arr) {
   })
 }
 
-function checkAll() {
-  return readDirAndFiles()
+function checkAll(cwdDir) {
+  return readDirAndFiles(cwdDir)
     .then(genAST)
     .then(data => uniqArr(data))
 }
