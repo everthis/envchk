@@ -18,7 +18,7 @@ const excludedFolders = [
 ]
 const excludedFilePrefix = ['._']
 const cwd = process.cwd()
-const cwdLen = cwd.length + 1
+let cwdLen = cwd.length + 1
 
 let pwdFiles = []
 let pwdDirs = []
@@ -166,6 +166,7 @@ async function genAST(wantedFileList) {
 function readDirAndFiles(cwdDir, files = []) {
   let tmpPath
   const dir = cwdDir || process.cwd()
+  cwdLen = dir.length
   return new Promise((resolve, reject) => {
     try {
       if (!files.length) {
