@@ -110,7 +110,7 @@ async function genAST(wantedFileList) {
     let str = ''
     let ast = {}
     for (let i = wantedFileList.length - 1; i >= 0; i--) {
-      console.log(wantedFileList[i])
+      // console.log(wantedFileList[i])
       str = await readFileAsync(wantedFileList[i], { encoding: 'utf8' })
       // AssignmentExpression
       ast = babylon.parse(str, {
@@ -206,7 +206,7 @@ function uniqArr(arr) {
 }
 
 function checkAll() {
-  readDirAndFiles()
+  return readDirAndFiles()
     .then(genAST)
     .then(data => uniqArr(data))
 }

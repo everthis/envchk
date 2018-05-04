@@ -4,5 +4,6 @@
  * support: ENV['env1'] or ENV.env2
  */
 const envchk = require('../index')
-envchk.checkAll()
+const { log } = console
+envchk.checkAll().then(log)
 
