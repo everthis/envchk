@@ -151,7 +151,7 @@ async function genAST(wantedFileList) {
         })
       } catch (err) {
         return {
-          file: wantedFileList[i],
+          file: wantedFileList[i].slice(cwdLen),
           errorMsg: err.message
         }
       }
