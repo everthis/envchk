@@ -112,42 +112,49 @@ async function genAST(wantedFileList) {
     for (let i = wantedFileList.length - 1; i >= 0; i--) {
       // console.log(wantedFileList[i])
       str = await readFileAsync(wantedFileList[i], { encoding: 'utf8' })
-      // AssignmentExpression
-      ast = babylon.parse(str, {
-        sourceType: 'module',
-        plugins: [
-          'jsx',
-          'flow',
-          'flowComments',
-          'typescript',
-          'doExpressions',
-          'objectRestSpread',
-          'decorators',
-          'decorators2',
-          'classProperties',
-          'classPrivateProperties',
-          'classPrivateMethods',
-          'exportDefaultFrom',
-          'exportNamespaceFrom',
-          'asyncGenerators',
-          'functionBind',
-          'functionSent',
-          'dynamicImport',
-          'numericSeparator',
-          'optionalChaining',
-          'importMeta',
-          'bigInt',
-          'optionalCatchBinding',
-          'throwExpressions',
-          'pipelineOperator',
-          'nullishCoalescingOperator'
-        ]
-        // ecmaVersion: 8,
-        // plugins:{asyncawait:true},
-        // sourceType: 'module',
-        // allowHashBang: true,
-        // allowImportExportEverywhere: true
-      })
+      try {
+        // AssignmentExpression
+        ast = babylon.parse(str, {
+          sourceType: 'module',
+          plugins: [
+            'jsx',
+            'flow',
+            'flowComments',
+            'typescript',
+            'doExpressions',
+            'objectRestSpread',
+            'decorators',
+            'decorators2',
+            'classProperties',
+            'classPrivateProperties',
+            'classPrivateMethods',
+            'exportDefaultFrom',
+            'exportNamespaceFrom',
+            'asyncGenerators',
+            'functionBind',
+            'functionSent',
+            'dynamicImport',
+            'numericSeparator',
+            'optionalChaining',
+            'importMeta',
+            'bigInt',
+            'optionalCatchBinding',
+            'throwExpressions',
+            'pipelineOperator',
+            'nullishCoalescingOperator'
+          ]
+          // ecmaVersion: 8,
+          // plugins:{asyncawait:true},
+          // sourceType: 'module',
+          // allowHashBang: true,
+          // allowImportExportEverywhere: true
+        })
+      } catch (err) {
+        return {
+          file: wantedFileList[i],
+          errorMsg: err.message
+        }
+      }
       traverse(ast, {
         enter: function(path) {
           if (path.node.type == 'MemberExpression') {
@@ -167,6 +174,8 @@ function readDirAndFiles(cwdDir, files = []) {
   let tmpPath
   const dir = cwdDir || process.cwd()
   cwdLen = dir.length
+  pwdFiles = []
+  pwdDirs = []
   return new Promise((resolve, reject) => {
     try {
       if (!files.length) {
@@ -193,6 +202,9 @@ function readDirAndFiles(cwdDir, files = []) {
 }
 
 function uniqArr(arr) {
+  if (!Array.isArray(arr)) {
+    return arr
+  }
   return arr.filter((v, i, a) => {
     const idx = a.findIndex(el => el.name === v.name)
     if (idx === i) {
