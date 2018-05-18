@@ -92,8 +92,10 @@ function destructuringAssignmentEnv(node, list = [], filePath) {
   for (let el of node.declarations) {
     if (
       el.type === 'VariableDeclarator' &&
+      el.init &&
       el.init.type === 'Identifier' &&
       el.init.name === 'ENV' &&
+      el.id &&
       el.id.type === 'ObjectPattern'
     ) {
       for (let prop of el.id.properties) {
