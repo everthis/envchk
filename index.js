@@ -88,6 +88,24 @@ function envIdentifierWithProcess(node, list = [], filePath) {
   return list
 }
 
+function destructuringAssignmentEnv(node, list = [], filePath) {
+  for (let el of node.declarations) {
+    if (
+      el.type === 'VariableDeclarator' &&
+      el.init.type === 'Identifier' &&
+      el.init.name === 'ENV' &&
+      el.id.type === 'ObjectPattern'
+    ) {
+      for (let prop of el.id.properties) {
+        if (prop.type === 'ObjectProperty') {
+          list.push({ name: prop.key.name, paths: [filePath.slice(cwdLen)] })
+        }
+      }
+    }
+  }
+  return list
+}
+
 function filterDirs(arr) {
   return arr.filter(el => excludedFolders.indexOf(path.parse(el).name) === -1)
 }
@@ -160,6 +178,9 @@ async function genAST(wantedFileList) {
           if (path.node.type == 'MemberExpression') {
             getEnvIdentifier(path.node, res, wantedFileList[i])
             envIdentifierWithProcess(path.node, res, wantedFileList[i])
+          }
+          if (path.node.type === 'VariableDeclaration') {
+            destructuringAssignmentEnv(path.node, res, wantedFileList[i])
           }
         }
       })
